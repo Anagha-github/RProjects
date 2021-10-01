@@ -1,0 +1,52 @@
+setwd("C:\Users\anagh\OneDrive\SRH\Analytics3")
+---
+title: "compare svm and a model"
+author: "Anagha"
+date: "6/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("C:/Users/anagh/OneDrive/SRH/Analytics3")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r cars}
+db <- data.frame(cars)
+summary(cars)
+head(db)
+```
+
+## Comparing SVM and LM by RMSE
+
+You can also embed plots, for example:
+
+```{r}
+getwd()
+db_lr <- lm(dist~ .,data= db)
+summary(db_lr)
+library(e1071)
+db_svm<-svm(dist~.,data= db)
+summary(db_svm)
+res_lr<- db_lr$residuals 
+res_svm <- db_svm$residuals
+rmse<-function(e){
+  sqrt(mean(e^2))}
+rmse(res_lr)
+rmse(res_svm)
+```
+##Comparing SVM and LM visually
+
+```{r}
+db$ypred <- predict(db_svm)
+plot(dist ~ speed, data = db, main= "SVM and LR comparisson")
+cols<- c("red", "dodgerblue", "black")
+abline(db_lr, col= cols[1], lwd =2)
+points(db$speed, db$ypred,pch=20,col=cols[2],cex=2)
+legend("topleft",leg=c("linear regression","SVM","data"),col=cols,pch=c(20,20,21),inset=.01,bg="wheat")
+
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

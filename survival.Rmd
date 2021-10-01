@@ -1,0 +1,52 @@
+setwd("C:/Users/anagh/OneDrive/SRH/Analytics3")
+---
+title: "Survival"
+author: "Anagha"
+date: "6/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("survival")
+#install.packages("RColorBrewer")
+#install.packages("party")
+```
+
+## R Markdown
+
+```{r}
+library(survival)
+?leukemia
+str(leukemia)
+fit<-survfit(Surv(time, status)~x,data= leukemia)
+summary(fit)
+```
+
+## Including Plots
+
+
+```{r }
+plot(fit,lty=1:2,mark.time=TRUE,ylab="Probability",xlab="Survival Time in Days")
+legend(250,0.2,legend=c("yes","no"),lty=c(2,1),title="Survival in patients with Acute Myelogenous Leukemia",bty="n")
+```
+
+
+```{r }
+sdiff<-survdiff(Surv(time, status)~x,data= leukemia)
+sdiff
+```
+Plot the cumulative hazard function
+
+```{r}
+plot(fit,lty=1:2,ylab="Cumulative Hazard",fun="cumhaz",xlab="Time in Days")
+legend("topleft",legend=c("Maintained","non-Maintained"),lty=c(2,1),title="Maintenance chemotherapy",bty="n")
+```
+```{r}
+library(party)
+fit.ctree<-ctree(Surv(time, status)~x,data= leukemia)
+fit.ctree
+plot(fit.ctree)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

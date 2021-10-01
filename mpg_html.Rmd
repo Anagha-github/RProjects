@@ -1,0 +1,121 @@
+setwd("C:/Users/anagh/OneDrive/SRH/Analytics3")
+---
+title: "Miles Per Gallon: An Analysis of the favourite data"
+output: html_document
+theme: cerulean
+highlight: tango
+author: "Anagha"
+date: "`r Sys.Date()`"
+---
+
+# Notes
+
+Modifying the header above might be somewhat tricky because of spaces and tabs which might muddle the yaml scanner.
+
+For more information, see for example the comprehensive guide:
+
+<https://bookdown.org/yihui/rmarkdown/>
+
+```{r include=FALSE}
+## above line: 'include=FALSE' does not include output in exported document.
+## The following lines depends on your local settings and may be added
+## automatically by your IDE
+knitr::opts_chunk$set(echo = TRUE)
+library("rmarkdown")
+library("knitr")
+```
+
+# Outline
+
+1.  Analyze the mpg data set with two statistical methods.
+2.  Compare the results of both methods.
+3.  Don't forget a descriptive analysis.
+4.  Prepare a reproduce-able document of the analysis in Markdown or LaTeX.
+
+# Descriptive Statistics
+
+Here comes the descriptive stats
+
+```{r }
+#install.packages("tidyverse")
+#library("dplyr")
+#install.packages("ggplot2")
+## your code starts here
+db <- read.table("auto-mpg.data", fileEncoding = "UTF-8")
+## assign column names
+colnames(db)<-c("mpg", "cylinders", "displacement", "horsepower", "weight", "acceleration", "model_year", "origin", "car_name")
+## convert horsepower char to numeric
+db <- transform(db, horsepower = suppressWarnings(as.numeric(db$horsepower)))
+## drop NA values
+db <- na.omit(db)
+## stats
+summary(db)
+```
+
+# Statistical Model 1
+
+Choice: linear regression Model
+
+```{r}
+#install.packages("shiny")
+library(ggplot2)
+print(ggplot(db, aes(displacement, mpg)) + geom_point()+ geom_smooth())
+print(ggplot(db, aes(horsepower, mpg)) + geom_point()+ geom_smooth())
+db_lm1 = lm(mpg ~ displacement, data = db)
+summary(db_lm1)
+##mpg = -0.06*displacement + 35.12, correlation = 0.64
+db_lm2 = lm(mpg ~ weight, data = db)
+summary(db_lm2)
+predict(object = db_lm1,newdata = data.frame(displacement = c(300,400,50)))
+
+```
+
+# Statisical Model 2
+
+Choice: Binary Tree Model
+
+```{r}
+#install.packages("rpart")
+#install.packages("rpart.plot")
+library(rpart)
+library(rpart.plot)
+
+smp_size <- floor(0.75 * nrow(db))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(db)), size = smp_size)
+
+train <- db[train_ind, ]
+test <- db[-train_ind, ]
+
+dbtree <- rpart(mpg ~ . -car_name, data = train, method = "anova")
+print(rpart.plot(dbtree))
+printcp(dbtree) # display the results
+plotcp(dbtree) # visualize cross-validation results
+
+#summary(dbtree) # detailed summary of splits
+
+```
+
+
+
+# Comparision
+```{r}
+db_lm <- lm(mpg ~ .  -car_name, data = db)
+summary(db_lm)
+#install.packages("olsrr")
+library(olsrr)
+ols_plot_cooksd_chart(db_lm)
+ols_plot_cooksd_bar(db_lm)
+ols_plot_resid_lev(db_lm)
+op <- par(mfrow=c(2,3))
+for(i in 1:6)
+   plot(db_lm, which=i)
+#no associiation btw resid and fitted values, which is good. because red line i almost a straight line. 
+slm <- step(db_lm)
+summary(slm)
+slm$anova
+slm
+```
+

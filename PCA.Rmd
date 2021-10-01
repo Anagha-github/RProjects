@@ -1,0 +1,57 @@
+setwd("C:/Users/anagh/OneDrive/SRH/Analytics3")
+---
+title: "PCA"
+author: "Anagha"
+date: "6/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r }
+getwd()
+PCAdata <- read.csv("heptathlon.csv")
+head(PCAdata)
+PCAdata$hurdles<-max(PCAdata$hurdles)-PCAdata$hurdles
+PCAdata$run200m<-max(PCAdata$run200m)-PCAdata$run200m
+PCAdata$run800m<-max(PCAdata$run800m)-PCAdata$run800m
+```
+
+## finding correlation
+
+You can also embed plots, for example:
+
+```{r}
+cm<-cor(PCAdata)
+round(cm,2)
+#install.packages("corrplot")
+library(corrplot)
+corrplot(cm,is.corr=FALSE)
+
+```
+## calculating PCA
+```{r}
+df <- subset(PCAdata, select = -c(score))
+pca <- prcomp(df, scale = TRUE )
+pca
+summary(pca)#first 2 PCAs 
+plot(pca)
+```
+##LM comparision before and after PCA
+```{r}
+limo<- lm(score~.,data = PCAdata)
+summary(limo)
+PCAlm <- lm(score ~ pca$x[,1] + pca$x[,2], data = PCAdata)
+summary(PCAlm)#hence same result with pc1 and pc2 instead of using the whole dataset variables
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
